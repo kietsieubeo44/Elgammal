@@ -7,6 +7,30 @@ def generate_keys(p, g, x):
     y = pow(g, x, p)  # Khóa công khai
     return (y, x)
 
+def find_primitive_root(p):
+    """Tìm số gốc nguyên thủy cho modulo p"""
+    if p == 2:
+        return 1
+    phi = p - 1
+    for candidate in range(2, p):
+        if pow(candidate, phi, p) == 1:
+            return candidate
+    return None
+
+def generate_p_and_g():
+    """Tạo số nguyên tố ngẫu nhiên và số gốc nguyên thủy tương ứng"""
+    p = random.randint(1000, 10000)
+    while not isprime(p):
+        p = random.randint(1000, 10000)
+    g = find_primitive_root(p)
+    if g is not None:
+        p_entry.delete(0, tk.END)
+        p_entry.insert(0, str(p))
+        g_entry.delete(0, tk.END)
+        g_entry.insert(0, str(g))
+    else:
+        result_label.config(text="Không tìm thấy số gốc nguyên thủy cho số nguyên tố đã nhập!")
+
 def encrypt_char(char, p, g, y):
     """Mã hóa một ký tự bằng ElGamal"""
     plaintext = ord(char)  # Mã ASCII của ký tự
@@ -26,7 +50,6 @@ def decrypt_char(ciphertext, p, x):
     plaintext = (c2 * inverse_s) % p
     return chr(plaintext)  # Chuyển từ mã ASCII về ký tự
 
-
 def decrypt_text(ciphertext, p, x):
     """Giải mã một chuỗi ký tự mã hóa bằng ElGamal"""
     decrypted_text = ""
@@ -37,10 +60,10 @@ def decrypt_text(ciphertext, p, x):
 
 def generate_prime():
     """Tạo số nguyên tố ngẫu nhiên"""
-    while True:
+    p = random.randint(1000, 10000)
+    while not isprime(p):
         p = random.randint(1000, 10000)
-        if isprime(p):
-            return p
+    return p
 
 def encrypt_decrypt():
     p = int(p_entry.get())
@@ -71,6 +94,10 @@ g_label = tk.Label(window, text="Nhập số nguyên g (primitive root modulo p)
 g_label.grid(row=1, column=0, padx=5, pady=5)
 g_entry = tk.Entry(window)
 g_entry.grid(row=1, column=1, padx=5, pady=5)
+
+# Nút tạo số gốc nguyên thủy ngẫu nhiên
+random_primitive_button = tk.Button(window, text="Tạo số gốc nguyên thủy ngẫu nhiên", command=generate_p_and_g)
+random_primitive_button.grid(row=1, column=2, padx=5, pady=5)
 
 # Nhãn và ô nhập cho văn bản thô
 plaintext_label = tk.Label(window, text="Nhập văn bản thô cần mã hóa:")
