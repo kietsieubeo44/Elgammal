@@ -1,52 +1,52 @@
 import random
+from sympy import mod_inverse
 
-def gcd(a, b):
-    while b != 0:
-        a, b = b, a % b
-    return a
+def generate_keys(p, g, x):
+    """Tạo khóa công khai và khóa riêng tư"""
+    y = pow(g, x, p)  # Khóa công khai
+    return (y, x)
 
-def mod_inverse(a, m):
-    m0, x0, x1 = m, 0, 1
-    while a > 1:
-        q = a // m
-        m, a = a % m, m
-        x0, x1 = x1 - q * x0, x0
-    return x1 + m0 if x1 < 0 else x1
-
-def generate_keypair():
-    p = 761
-    g = random.randint(2, p - 1)
-    x = random.randint(2, p - 2)
-    h = pow(g, x, p)
-    return (p, g, h), x
-
-def encrypt(public_key, plaintext):
-    p, g, h = public_key
-    k = random.randint(2, p - 2)
+def encrypt(plaintext, p, g, y):
+    """Mã hóa văn bản thô bằng ElGamal"""
+    k = random.randint(1, p - 2)  # Tạo khóa ngẫu nhiên
     c1 = pow(g, k, p)
-    c2 = (plaintext * pow(h, k, p)) % p
-    return c1, c2
+    s = pow(y, k, p)
+    c2 = (plaintext * s) % p
+    return (c1, c2)
 
-def decrypt(private_key, public_key, ciphertext):
-    p, _, _ = public_key
+def decrypt(ciphertext, p, x):
+    """Giải mã văn bản mã hóa bằng ElGamal"""
     c1, c2 = ciphertext
-    x = private_key
     s = pow(c1, x, p)
-    s_inv = mod_inverse(s, p)
-    plaintext = (c2 * s_inv) % p
+    plaintext = (c2 * mod_inverse(s, p)) % p
     return plaintext
 
-# Tạo khóa công khai và khóa riêng tư
-public_key, private_key = generate_keypair()
+def main():
+    # Nhập số nguyên tố lớn p và số nguyên g
+    p = int(input("Nhập số nguyên tố lớn p: "))
+    g = int(input("Nhập số nguyên g (primitive root modulo p): "))
+    
+    # Sinh khóa riêng tư và công khai
+    x = random.randint(2, p - 2)  # Khóa riêng tư
+    y, _ = generate_keys(p, g, x)   # Khóa công khai
+    
+    print("Khóa công khai (y):", y)
+    print("Khóa riêng tư (x):", x)
+    
+    # Nhập và mã hóa văn bản thô
+    while True:
+        try:
+            plaintext = int(input("Nhập văn bản thô cần mã hóa: "))
+            break
+        except ValueError:
+            print("Vui lòng nhập một số nguyên.")
+    
+    ciphertext = encrypt(plaintext, p, g, y)
+    print("Văn bản đã mã hóa:", ciphertext)
+    
+    # Giải mã văn bản mã hóa
+    decrypted_text = decrypt(ciphertext, p, x)
+    print("Văn bản đã giải mã:", decrypted_text)
 
-# Nhập số nguyên bạn muốn mã hóa
-plaintext = 123
-print("Số nguyên ban đầu:", plaintext)
-
-# Mã hóa số nguyên
-ciphertext = encrypt(public_key, plaintext)
-print("Số sau khi mã hóa:", ciphertext)
-
-# Giải mã số nguyên bằng cách sử dụng khóa riêng tư
-decrypted_text = decrypt(private_key, public_key, ciphertext)
-print("Số sau khi giải mã:", decrypted_text)
+if __name__ == "__main__":
+    main()
