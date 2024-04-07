@@ -36,11 +36,17 @@ def decrypt(private_key, public_key, ciphertext):
     plaintext = (c2 * s_inv) % p
     return plaintext
 
-# Sử dụng
+# Tạo khóa công khai và khóa riêng tư
 public_key, private_key = generate_keypair()
-plaintext = 123 # Văn bản cần mã hóa
-print("Văn bản ban đầu:", plaintext)
+
+# Nhập số nguyên bạn muốn mã hóa
+plaintext = 123
+print("Số nguyên ban đầu:", plaintext)
+
+# Mã hóa số nguyên
 ciphertext = encrypt(public_key, plaintext)
-print("Văn bản sau khi mã hóa:", ciphertext)
+print("Số sau khi mã hóa:", ciphertext)
+
+# Giải mã số nguyên bằng cách sử dụng khóa riêng tư
 decrypted_text = decrypt(private_key, public_key, ciphertext)
-print("Văn bản sau khi giải mã:", decrypted_text)
+print("Số sau khi giải mã:", decrypted_text)
