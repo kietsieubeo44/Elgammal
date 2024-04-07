@@ -48,7 +48,8 @@ def giai_ma_ky_tu(ky_tu_ma_hoa, p, x):
     s = pow(c1, x, p)
     nghich_dao_s = mod_inverse(s, p)
     if nghich_dao_s is None:
-        raise ValueError(f"Nghịch đảo của {s} (mod {p}) không tồn tại")
+        messagebox.showerror("Lỗi", f"Nghịch đảo của {s} (mod {p}) không tồn tại")
+        return None
     chu_cai = (c2 * nghich_dao_s) % p
     return chr(chu_cai)
 
@@ -57,30 +58,36 @@ def giai_ma_van_ban(van_ban_ma_hoa, p, x):
     van_ban_giai_ma = ""
     for ky_tu_ma_hoa in van_ban_ma_hoa:
         ky_tu = giai_ma_ky_tu(ky_tu_ma_hoa, p, x)
+        if ky_tu is None:
+            return None
         van_ban_giai_ma += ky_tu
     return van_ban_giai_ma
-
-def tao_so_nguyen_to():
-    """Tạo một số nguyên tố ngẫu nhiên."""
-    p = random.randint(1000, 10000)
-    while not isprime(p):
-        p = random.randint(1000, 10000)
-    return p
 
 def ma_hoa_giai_ma():
     """Mã hóa hoặc giải mã văn bản đầu vào dựa trên các tham số do người dùng cung cấp."""
     try:
-        p = int(p_nhap.get())
-        g = int(g_nhap.get())
-        van_ban_goc = van_ban_nhap.get()
+        p_value = p_nhap.get()
+        g_value = g_nhap.get()
+        van_ban_value = van_ban_nhap.get()
+
+        # Kiểm tra xem tất cả các giá trị đã được cung cấp hay không
+        if not p_value or not g_value or not van_ban_value:
+            raise ValueError("Vui lòng nhập đầy đủ các giá trị p, g và văn bản cần mã hóa.")
+
+        p = int(p_value)
+        g = int(g_value)
+        van_ban_goc = van_ban_value
         x = random.randint(2, p - 2)
         y, _ = tao_khoa(p, g, x)
         van_ban_ma_hoa = [ma_hoa_ky_tu(ky_tu, p, g, y) for ky_tu in van_ban_goc]
         van_ban_giai_ma = giai_ma_van_ban(van_ban_ma_hoa, p, x)
+        if van_ban_giai_ma is None:
+            raise ValueError("Lỗi khi giải mã văn bản.")
         ket_qua.config(text=f"Mã hóa: {van_ban_ma_hoa}\nGiải mã: '{van_ban_giai_ma}'")
         messagebox.showinfo("Thành công", "Mã hóa và giải mã hoàn tất thành công!")
     except Exception as e:
         messagebox.showerror("Lỗi", str(e))
+
 
 def xoa_ket_qua():
     """Xóa nhãn kết quả."""
@@ -95,10 +102,6 @@ p_nhap_label = tk.Label(cua_so, text="Nhập một số nguyên tố lớn (p):"
 p_nhap_label.grid(row=0, column=0, padx=5, pady=5)
 p_nhap = tk.Entry(cua_so)
 p_nhap.grid(row=0, column=1, padx=5, pady=5)
-
-# Nút để tạo số nguyên tố ngẫu nhiên
-nut_tao_so_nguyen_to_ngau_nhien = tk.Button(cua_so, text="Tạo Số Nguyên Tố Ngẫu Nhiên", command=tao_so_nguyen_to)
-nut_tao_so_nguyen_to_ngau_nhien.grid(row=0, column=2, padx=5, pady=5)
 
 # Nhãn và ô nhập cho g
 g_nhap_label = tk.Label(cua_so, text="Nhập một gốc nguyên thủy modulo p (g):")
