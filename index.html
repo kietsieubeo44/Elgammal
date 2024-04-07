@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElGamal Encryption</title>
+    <style>
+        textarea {
+            width: 300px;
+            height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ElGamal Encryption</h1>
+    <label for="message">Nhập tin nhắn:</label><br>
+    <textarea id="message"></textarea><br>
+    <button onclick="encrypt()">Mã hóa</button>
+    <button onclick="decrypt()">Giải mã</button><br>
+    <label for="publicKey">Khóa công khai:</label><br>
+    <textarea id="publicKey" readonly></textarea><br>
+    <label for="encryptedMessage">Tin nhắn đã mã hóa:</label><br>
+    <textarea id="encryptedMessage" readonly></textarea><br>
+    <label for="decryptedMessage">Tin nhắn đã giải mã:</label><br>
+    <textarea id="decryptedMessage" readonly></textarea><br>
+    
+    <script>
+        // Hàm tìm ước chung lớn nhất
+        function gcd(a, b) {
+            if (b === 0) return a;
+            return gcd(b, a % b);
+        }
+
+        // Hàm tính lũy thừa theo modulo
+        function powerMod(base, exponent, modulus) {
+            if (modulus === 1) return 0;
+            let result = 1;
+            base = base % modulus;
+            while (exponent > 0) {
+                if (exponent % 2 === 1) {
+                    result = (result * base) % modulus;
+                }
+                exponent = exponent >> 1;
+                base = (base * base) % modulus;
+            }
+            return result;
+        }
+
+        // Hàm mã hóa
+        function encrypt() {
+            const message = document.getElementById("message").value;
+            const p = 541; // Số nguyên tố lớn
+            const g = 10; // Nguyên tố g nhỏ hơn p và là phần tử nguyên thủy modulo p
+            const a = 6; // Khóa bí mật người gửi
+            const b = powerMod(g, a, p); // Khóa công khai người gửi
+            const k = 7; // Số ngẫu nhiên
+            const y = powerMod(g, k, p); // Tính y
+
+            const encryptedMessage = message.split('').map(char => {
+                const m = char.charCodeAt(0);
+                const c1 = powerMod(g, k, p);
+                const c2 = (m * powerMod(y, k, p)) % p;
+                return `(${c1},${c2})`;
+            }).join(' ');
+
+            document.getElementById("publicKey").value = `${p},${g},${b}`;
+            document.getElementById("encryptedMessage").value = encryptedMessage;
+        }
+
+        // Hàm giải mã
+        function decrypt() {
+            const encryptedMessage = document.getElementById("encryptedMessage").value;
+            const [p, g, b] = document.getElementById("publicKey").value.split(',').map(Number);
+            const a = 6; // Khóa bí mật của người nhận
+
+            const decryptedMessage = encryptedMessage.split(' ').map(part => {
+                const [c1, c2] = part.slice(1, -1).split(',').map(Number);
+                const s = powerMod(c1, a, p);
+                const m = (c2 * powerMod(s, p - 2, p)) % p;
+                return String.fromCharCode(m);
+            }).join('');
+
+            document.getElementById("decryptedMessage").value = decryptedMessage;
+        }
+    </script>
+</body>
+</html>
