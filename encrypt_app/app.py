@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from elgamal import generate_keys, encrypt, decrypt
+from encrypt_app.elgamal import generate_keys, encrypt, decrypt
 
 app = Flask(__name__)
 
