@@ -13,27 +13,21 @@ def tim_goc_nguyen_thuy(p):
     phi = p - 1
     while True:
         g = random.randint(2, p - 1)
-        if pow(g, phi, p) == 1:
+        if pow(g, phi, p) == 1 and pow(g, 2, p) != 1:  # Kiểm tra g có phải là gốc nguyên thủy hay không
             return g
 
-p_value = None
-g_value = None
 
 def tao_p_va_g():
     """Tạo một số nguyên tố ngẫu nhiên (p) và gốc nguyên thủy tương ứng (g)."""
-    global p_value, g_value
-
     p = random.randint(1000, 10000)
     while not isprime(p):
         p = random.randint(1000, 10000)
     g = tim_goc_nguyen_thuy(p)
     if g is not None:
-        p_value = p
-        g_value = g
         p_nhap.delete(0, tk.END)
-        p_nhap.insert(0, str(p_value))
+        p_nhap.insert(0, str(p))
         g_nhap.delete(0, tk.END)
-        g_nhap.insert(0, str(g_value))
+        g_nhap.insert(0, str(g))
         messagebox.showinfo("Thành công", "Số nguyên tố ngẫu nhiên (p) và gốc nguyên thủy (g) đã được tạo thành công!")
     else:
         messagebox.showerror("Lỗi", "Không thể tìm gốc nguyên thủy cho số nguyên tố đã tạo (p).")
