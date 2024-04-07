@@ -1,14 +1,15 @@
 import random
 from sympy import mod_inverse, isprime
 import tkinter as tk
+from tkinter import messagebox
 
-def generate_keys(p, g, x):
-    """Tạo khóa công khai và khóa riêng tư"""
-    y = pow(g, x, p)  # Khóa công khai
+def tao_khoa(p, g, x):
+    """Tạo khóa công cộng và khóa riêng."""
+    y = pow(g, x, p)  # Khóa công cộng
     return (y, x)
 
-def find_primitive_root(p):
-    """Tìm số gốc nguyên thủy cho modulo p"""
+def tim_goc_nguyen_thuy(p):
+    """Tìm gốc nguyên thủy theo modulo p."""
     if p == 2:
         return 1
     phi = p - 1
@@ -17,100 +18,115 @@ def find_primitive_root(p):
             return candidate
     return None
 
-def generate_p_and_g():
-    """Tạo số nguyên tố ngẫu nhiên và số gốc nguyên thủy tương ứng"""
+def tao_p_va_g():
+    """Tạo một số nguyên tố ngẫu nhiên (p) và gốc nguyên thủy tương ứng (g)."""
     p = random.randint(1000, 10000)
     while not isprime(p):
         p = random.randint(1000, 10000)
-    g = find_primitive_root(p)
+    g = tim_goc_nguyen_thuy(p)
     if g is not None:
-        p_entry.delete(0, tk.END)
-        p_entry.insert(0, str(p))
-        g_entry.delete(0, tk.END)
-        g_entry.insert(0, str(g))
+        p_nhap.delete(0, tk.END)
+        p_nhap.insert(0, str(p))
+        g_nhap.delete(0, tk.END)
+        g_nhap.insert(0, str(g))
+        messagebox.showinfo("Thành công", "Số nguyên tố ngẫu nhiên (p) và gốc nguyên thủy (g) đã được tạo thành công!")
     else:
-        result_label.config(text="Không tìm thấy số gốc nguyên thủy cho số nguyên tố đã nhập!")
+        messagebox.showerror("Lỗi", "Không thể tìm gốc nguyên thủy cho số nguyên tố đã tạo (p).")
 
-def encrypt_char(char, p, g, y):
-    """Mã hóa một ký tự bằng ElGamal"""
-    plaintext = ord(char)  # Mã ASCII của ký tự
-    k = random.randint(1, p - 2)  # Tạo khóa ngẫu nhiên
+def ma_hoa_ky_tu(ky_tu, p, g, y):
+    """Mã hóa một ký tự sử dụng ElGamal."""
+    chu_cai = ord(ky_tu)  # Giá trị ASCII của ký tự
+    k = random.randint(1, p - 2)  # Tạo một khóa ngẫu nhiên
     c1 = pow(g, k, p)
     s = pow(y, k, p)
-    c2 = (plaintext * s) % p
+    c2 = (chu_cai * s) % p
     return (c1, c2)
 
-def decrypt_char(ciphertext, p, x):
-    """Giải mã một ký tự mã hóa bằng ElGamal"""
-    c1, c2 = ciphertext
+def giai_ma_ky_tu(ky_tu_ma_hoa, p, x):
+    """Giải mã một ký tự đã được mã hóa bằng ElGamal."""
+    c1, c2 = ky_tu_ma_hoa
     s = pow(c1, x, p)
-    inverse_s = mod_inverse(s, p)
-    if inverse_s is None:
-        raise ValueError(f"Inverse of {s} (mod {p}) does not exist")
-    plaintext = (c2 * inverse_s) % p
-    return chr(plaintext)  # Chuyển từ mã ASCII về ký tự
+    nghich_dao_s = mod_inverse(s, p)
+    if nghich_dao_s is None:
+        raise ValueError(f"Nghịch đảo của {s} (mod {p}) không tồn tại")
+    chu_cai = (c2 * nghich_dao_s) % p
+    return chr(chu_cai)
 
-def decrypt_text(ciphertext, p, x):
-    """Giải mã một chuỗi ký tự mã hóa bằng ElGamal"""
-    decrypted_text = ""
-    for char_ciphertext in ciphertext:
-        char = decrypt_char(char_ciphertext, p, x)
-        decrypted_text += char
-    return decrypted_text
+def giai_ma_van_ban(van_ban_ma_hoa, p, x):
+    """Giải mã một chuỗi đã được mã hóa bằng ElGamal."""
+    van_ban_giai_ma = ""
+    for ky_tu_ma_hoa in van_ban_ma_hoa:
+        ky_tu = giai_ma_ky_tu(ky_tu_ma_hoa, p, x)
+        van_ban_giai_ma += ky_tu
+    return van_ban_giai_ma
 
-def generate_prime():
-    """Tạo số nguyên tố ngẫu nhiên"""
+def tao_so_nguyen_to():
+    """Tạo một số nguyên tố ngẫu nhiên."""
     p = random.randint(1000, 10000)
     while not isprime(p):
         p = random.randint(1000, 10000)
     return p
 
-def encrypt_decrypt():
-    p = int(p_entry.get())
-    g = int(g_entry.get())
-    plaintext = plaintext_entry.get()
-    x = random.randint(2, p - 2)
-    y, _ = generate_keys(p, g, x)
-    ciphertext = [encrypt_char(char, p, g, y) for char in plaintext]
-    decrypted_text = decrypt_text(ciphertext, p, x)
-    result_label.config(text=f"Mã hóa: {ciphertext}\nGiải mã: '{decrypted_text}'")
+def ma_hoa_giai_ma():
+    """Mã hóa hoặc giải mã văn bản đầu vào dựa trên các tham số do người dùng cung cấp."""
+    try:
+        p = int(p_nhap.get())
+        g = int(g_nhap.get())
+        van_ban_goc = van_ban_nhap.get()
+        x = random.randint(2, p - 2)
+        y, _ = tao_khoa(p, g, x)
+        van_ban_ma_hoa = [ma_hoa_ky_tu(ky_tu, p, g, y) for ky_tu in van_ban_goc]
+        van_ban_giai_ma = giai_ma_van_ban(van_ban_ma_hoa, p, x)
+        ket_qua.config(text=f"Mã hóa: {van_ban_ma_hoa}\nGiải mã: '{van_ban_giai_ma}'")
+        messagebox.showinfo("Thành công", "Mã hóa và giải mã hoàn tất thành công!")
+    except Exception as e:
+        messagebox.showerror("Lỗi", str(e))
 
-# Tạo cửa sổ
-window = tk.Tk()
-window.title("ElGamal Encryption")
+def xoa_ket_qua():
+    """Xóa nhãn kết quả."""
+    ket_qua.config(text="")
+
+# Tạo cửa sổ tkinter
+cua_so = tk.Tk()
+cua_so.title("Mã Hóa ElGamal")
 
 # Nhãn và ô nhập cho p
-p_label = tk.Label(window, text="Nhập số nguyên tố lớn p:")
-p_label.grid(row=0, column=0, padx=5, pady=5)
-p_entry = tk.Entry(window)
-p_entry.grid(row=0, column=1, padx=5, pady=5)
+p_nhap_label = tk.Label(cua_so, text="Nhập một số nguyên tố lớn (p):")
+p_nhap_label.grid(row=0, column=0, padx=5, pady=5)
+p_nhap = tk.Entry(cua_so)
+p_nhap.grid(row=0, column=1, padx=5, pady=5)
 
-# Nút tạo số nguyên tố ngẫu nhiên
-random_prime_button = tk.Button(window, text="Tạo số nguyên tố ngẫu nhiên", command=generate_prime)
-random_prime_button.grid(row=0, column=2, padx=5, pady=5)
+# Nút để tạo số nguyên tố ngẫu nhiên
+nut_tao_so_nguyen_to_ngau_nhien = tk.Button(cua_so, text="Tạo Số Nguyên Tố Ngẫu Nhiên", command=tao_so_nguyen_to)
+nut_tao_so_nguyen_to_ngau_nhien.grid(row=0, column=2, padx=5, pady=5)
 
 # Nhãn và ô nhập cho g
-g_label = tk.Label(window, text="Nhập số nguyên g (primitive root modulo p):")
-g_label.grid(row=1, column=0, padx=5, pady=5)
-g_entry = tk.Entry(window)
-g_entry.grid(row=1, column=1, padx=5, pady=5)
+g_nhap_label = tk.Label(cua_so, text="Nhập một gốc nguyên thủy modulo p (g):")
+g_nhap_label.grid(row=1, column=0, padx=5, pady=5)
+g_nhap = tk.Entry(cua_so)
+g_nhap.grid(row=1, column=1, padx=5, pady=5)
 
-# Nút tạo số gốc nguyên thủy ngẫu nhiên
-random_primitive_button = tk.Button(window, text="Tạo số gốc nguyên thủy ngẫu nhiên", command=generate_p_and_g)
-random_primitive_button.grid(row=1, column=2, padx=5, pady=5)
+# Nút tạo ngẫu nhiên
+nut_tao_ngau_nhien = tk.Button(cua_so, text="Tạo Ngẫu Nhiên", command=tao_p_va_g)
+nut_tao_ngau_nhien.grid(row=1, column=2, padx=5, pady=5)
 
-# Nhãn và ô nhập cho văn bản thô
-plaintext_label = tk.Label(window, text="Nhập văn bản thô cần mã hóa:")
-plaintext_label.grid(row=2, column=0, padx=5, pady=5)
-plaintext_entry = tk.Entry(window)
-plaintext_entry.grid(row=2, column=1, padx=5, pady=5)
+# Nhãn và ô nhập cho văn bản gốc
+van_ban_nhap_label = tk.Label(cua_so, text="Nhập văn bản:")
+van_ban_nhap_label.grid(row=2, column=0, padx=5, pady=5)
+van_ban_nhap = tk.Entry(cua_so)
+van_ban_nhap.grid(row=2, column=1, padx=5, pady=5)
 
-# Nút thực hiện mã hóa và giải mã
-encrypt_button = tk.Button(window, text="Mã hóa/Giải mã", command=encrypt_decrypt)
-encrypt_button.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
+# Nút để mã hóa/giải mã
+nut_ma_hoa_giai_ma = tk.Button(cua_so, text="Mã Hóa/Giải Mã", command=ma_hoa_giai_ma)
+nut_ma_hoa_giai_ma.grid(row=3, column=0, columnspan=2, padx=5, pady=5)
+
+# Nút để xóa kết quả
+nut_xoa_ket_qua = tk.Button(cua_so, text="Xóa Kết Quả", command=xoa_ket_qua)
+nut_xoa_ket_qua.grid(row=3, column=2, padx=5, pady=5)
 
 # Nhãn để hiển thị kết quả
-result_label = tk.Label(window, text="", wraplength=300)
-result_label.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
+ket_qua = tk.Label(cua_so, text="", wraplength=300)
+ket_qua.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
 
-window.mainloop()
+# Chạy vòng lặp sự kiện của tkinter
+cua_so.mainloop()
